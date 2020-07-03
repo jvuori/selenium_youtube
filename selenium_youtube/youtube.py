@@ -3,6 +3,7 @@
 # System
 from typing import List, Dict, Optional, Tuple, Callable
 import time, json
+from enum import Enum, auto
 
 # Pip
 from selenium_firefox.firefox import Firefox, By, Keys
@@ -30,7 +31,10 @@ LOGIN_INFO_COOKIE_NAME = 'LOGIN_INFO'
 
 # ---------------------------------------------------------------------------------------------------------------------------------------- #
 
-
+class Visibility(Enum):
+    PRIVATE = auto()
+    UNLISTED = auto()
+    PUBLIC = auto()
 
 # ----------------------------------------------------------- class: Youtube ------------------------------------------------------------- #
 
@@ -122,6 +126,7 @@ class Youtube:
         description: str,
         tags: List[str],
         made_for_kids: Optional[bool],
+        visibility: Optional[Visibility] = Visibility.PUBLIC,
         _timeout: Optional[int] = 60*3, # 3 min
         extra_sleep_after_upload: Optional[int] = None,
         extra_sleep_before_publish: Optional[int] = None
@@ -129,14 +134,14 @@ class Youtube:
         if _timeout is not None:
             try:
                 with timeout.timeout(_timeout):
-                    return self.__upload(video_path, title, description, tags, made_for_kids, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
+                    return self.__upload(video_path, title, description, tags, made_for_kids, visibility, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
             except Exception as e:
                 print('Upload', e)
                 # self.browser.get(YT_URL)
 
                 return False, None
         else:
-            return self.__upload(video_path, title, description, tags, made_for_kids, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
+            return self.__upload(video_path, title, description, tags, made_for_kids, visibility, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
 
     def get_current_channel_id(self) -> Optional[str]:
         self.browser.get(YT_URL)
@@ -261,6 +266,7 @@ class Youtube:
         description: str,
         tags: List[str],
         made_for_kids: Optional[bool] = False,
+        visibility: Optional[Visibility] = Visibility.PUBLIC,
         extra_sleep_after_upload: Optional[int] = None,
         extra_sleep_before_publish: Optional[int] = None
     ) -> (bool, Optional[str]):
@@ -316,9 +322,9 @@ class Youtube:
             self.browser.find(By.ID, 'next-button').click()
             print('Upload: clicked second next')
 
-            public_main_button = self.browser.find(By.NAME, "PUBLIC")
+            public_main_button = self.browser.find(By.NAME, visibility.name)
             self.browser.find(By.ID, 'radioLabel', public_main_button).click()
-            print('Upload: set to public')
+            print('Upload: set to %s' % (visibility.name))
 
             progress_element = self.browser.find(
                 By.XPATH,

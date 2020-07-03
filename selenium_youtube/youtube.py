@@ -48,10 +48,11 @@ class Youtube:
         port: Optional[int] = None,
         screen_size: Optional[Tuple[int, int]] = None,
         full_screen: bool = False,
+        headless: bool = False,
         disable_images: bool = False,
         login_prompt_callback: Optional[Callable[[str], None]] = None
     ):
-        self.browser = Firefox(cookies_folder_path, extensions_folder_path, host=host, port=port, screen_size=screen_size, full_screen=full_screen, disable_images=disable_images)
+        self.browser = Firefox(cookies_folder_path, extensions_folder_path, host=host, port=port, screen_size=screen_size, full_screen=full_screen, headless=headless, disable_images=disable_images)
         self.channel_id = None
 
         try:

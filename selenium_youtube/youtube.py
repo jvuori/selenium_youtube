@@ -121,6 +121,7 @@ class Youtube:
         title: str,
         description: str,
         tags: List[str],
+        made_for_kids: Optional[bool],
         _timeout: Optional[int] = 60*3, # 3 min
         extra_sleep_after_upload: Optional[int] = None,
         extra_sleep_before_publish: Optional[int] = None
@@ -128,14 +129,14 @@ class Youtube:
         if _timeout is not None:
             try:
                 with timeout.timeout(_timeout):
-                    return self.__upload(video_path, title, description, tags, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
+                    return self.__upload(video_path, title, description, tags, made_for_kids, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
             except Exception as e:
                 print('Upload', e)
                 # self.browser.get(YT_URL)
 
                 return False, None
         else:
-            return self.__upload(video_path, title, description, tags, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
+            return self.__upload(video_path, title, description, tags, made_for_kids, extra_sleep_after_upload=extra_sleep_after_upload, extra_sleep_before_publish=extra_sleep_before_publish)
 
     def get_current_channel_id(self) -> Optional[str]:
         self.browser.get(YT_URL)
@@ -259,6 +260,7 @@ class Youtube:
         title: str,
         description: str,
         tags: List[str],
+        made_for_kids: Optional[bool] = False,
         extra_sleep_after_upload: Optional[int] = None,
         extra_sleep_before_publish: Optional[int] = None
     ) -> (bool, Optional[str]):
@@ -300,9 +302,13 @@ class Youtube:
             tags_field.send_keys(','.join(tags) + ',')
             print("Upload: added tags")
 
-            kids_section = self.browser.find(By.NAME, "NOT_MADE_FOR_KIDS")
+            if made_for_kids:
+                kids_selection_name = "MADE_FOR_KIDS"
+            else:
+                kids_selection_name = "NOT_MADE_FOR_KIDS"
+            kids_section = self.browser.find(By.NAME, kids_selection_name)
             self.browser.find(By.ID, "radioLabel", kids_section).click()
-            print("Upload: did set NOT_MADE_FOR_KIDS")
+            print("Upload: did set %s" % (kids_selection_name))
 
             self.browser.find(By.ID, 'next-button').click()
             print('Upload: clicked first next')

@@ -98,7 +98,7 @@ class Youtube:
 
         if not logged_in and email is not None and password is not None:
             logged_in = self.__login_auto(email, password)
-        
+
         if not logged_in:
             print('Could not log you in automatically.')
             logged_in = self.__login_manual(login_prompt_callback=login_prompt_callback)
@@ -271,7 +271,7 @@ class Youtube:
             self.browser.save_cookies()
 
             self.browser.find(By.XPATH, "//input[@type='file']").send_keys(video_path)
-            print('Upload: uploaded video')
+            print('Upload: upload initiated')
 
             if extra_sleep_after_upload is not None and extra_sleep_after_upload > 0:
                 time.sleep(extra_sleep_after_upload)
@@ -303,7 +303,7 @@ class Youtube:
             kids_section = self.browser.find(By.NAME, "NOT_MADE_FOR_KIDS")
             self.browser.find(By.ID, "radioLabel", kids_section).click()
             print("Upload: did set NOT_MADE_FOR_KIDS")
-            
+
             self.browser.find(By.ID, 'next-button').click()
             print('Upload: clicked first next')
 
@@ -313,6 +313,13 @@ class Youtube:
             public_main_button = self.browser.find(By.NAME, "PUBLIC")
             self.browser.find(By.ID, 'radioLabel', public_main_button).click()
             print('Upload: set to public')
+
+            progress_element = self.browser.find(
+                By.XPATH,
+                '/html/body/ytcp-uploads-dialog/paper-dialog/div/ytcp-animatable[2]/div/div[1]/ytcp-video-upload-progress')
+            while progress_element.get_attribute('uploading') == 'true':
+                time.sleep(1)
+            print('Upload: uploaded video')
 
             try:
                 video_url_container = self.browser.find(By.XPATH, "//span[@class='video-url-fadeable style-scope ytcp-video-info']", timeout=2.5)
@@ -490,7 +497,7 @@ class Youtube:
         time.sleep(0.5)
 
         return self.is_logged_in
-    
+
     def __login_manual(self, login_prompt_callback: Optional[Callable[[str], None]] = None) -> bool:
         self.browser.get(YT_LOGIN_URL)
         time.sleep(0.5)
@@ -507,10 +514,10 @@ class Youtube:
         time.sleep(0.5)
 
         return self.is_logged_in
-    
+
     def __video_url(self, video_id: str) -> str:
         return YT_URL + '/watch?v=' + video_id
-    
+
     def __channel_videos_url(self, channel_id: str) -> str:
         return YT_URL + '/channel/' + channel_id + '/videos?view=0&sort=da&flow=grid'
 

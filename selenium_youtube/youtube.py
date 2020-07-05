@@ -349,7 +349,11 @@ class Youtube:
             while True:
                 try:
                     done_button = self.browser.find(By.ID, 'done-button')
-
+                    if \
+                            progress_element.get_attribute('processing') == 'false' and \
+                            progress_element.get_attribute('processed') == 'false' and \
+                            progress_element.get_attribute('checks-can-start') == 'false':
+                        raise RuntimeError('Status should be either "processing", "processed" or "checks-can-start"')
                     if done_button.get_attribute('aria-disabled') == 'false':
                         done_button.click()
 
